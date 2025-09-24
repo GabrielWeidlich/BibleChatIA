@@ -1,0 +1,34 @@
+
+
+services:
+  # Serviço da API .NET
+  api:
+    container_name: biblia-chat-api
+    build:
+      context: . # O contexto é a pasta raiz onde está o docker-compose
+      dockerfile: API/Dockerfile
+    ports:
+      - "8080:8080" # Mapeia a porta 8080 do host para a 8080 do container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    env_file:
+      - API/.env
+    restart: unless-stopped
+
+  # Serviço do Frontend Next.js
+  frontend:
+    container_name: biblia-chat-frontend
+    build:
+      context: ./FRONTEND # O contexto agora é a pasta do frontend
+      dockerfile: Dockerfile
+      args:
+        # Passa a variável para o Dockerfile durante o build
+        - NEXT_PUBLIC_API_URL=http://localhost:8080
+    ports:
+      - "3000:3000"
+    environment:
+      # Garante que a variável esteja disponível em tempo de execução também
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - api # Garante que o container da api inicie antes do frontend
+    restart: unless-stopped
